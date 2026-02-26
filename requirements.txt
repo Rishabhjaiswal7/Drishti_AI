@@ -1,0 +1,12 @@
+fastapi 
+uvicorn
+SpeechRecognition 
+pyaudio
+gTTS
+pygame
+langchain 
+faiss-cpu
+sentence-transformers
+PyPDF2
+streamlit
+openai  # or use ollama for local LLM
