@@ -1,10 +1,20 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from rag_engine import RAGEngine
-from speech import speak
 
-app = FastAPI()
-rag = RAGEngine()  # Loads syllabus on startup
+app = FastAPI(title="DRISHTI-AI API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Load RAG on startup
+print("🚀 Starting DRISHTI-AI...")
+rag = RAGEngine()
 
 class QueryRequest(BaseModel):
     question: str
@@ -12,30 +22,21 @@ class QueryRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "DRISHTI-AI is running"}
+    return {
+        "status": "running",
+        "message": "DRISHTI-AI is active",
+        "version": "1.0"
+    }
 
 @app.post("/ask")
 def ask_question(req: QueryRequest):
     answer = rag.ask(req.question)
-    
-    if req.speak_response:
-        speak(answer)
-    
     return {
         "question": req.question,
-        "answer": answer
+        "answer": answer,
+        "status": "success"
     }
 
-@app.post("/voice-ask")
-def voice_ask():
-    """Full voice pipeline: mic → STT → RAG → TTS"""
-    from speech import listen_from_mic
-    
-    question = listen_from_mic()
-    if not question:
-        return {"error": "Could not capture voice"}
-    
-    answer = rag.ask(question)
-    speak(answer)
-    
-    return {"question": question, "answer": answer}
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
